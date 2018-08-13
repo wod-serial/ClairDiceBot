@@ -1,6 +1,5 @@
 # List of required packages (Dependencies)
 telebot
-re
 random
 
 
