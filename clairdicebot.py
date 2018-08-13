@@ -1,8 +1,6 @@
 #!/usr/bin/python3.5
 import telebot
 import re
-import traceback
-import sys
 import random
 
 token = '260104236:AAF9vWtho15vJfaj8xqrOGcxkUPgLGiPtYE'
@@ -56,7 +54,6 @@ def send_dice(message):
             t = roll_dices(m[1])
             bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t))
     except:
-        print (''.join(traceback.format_exception(*sys.exc_info())))
         bot.send_message(message.chat.id, 'ooooops')
 
 
@@ -94,7 +91,6 @@ def send_roll(message):
             bot.send_message(message.chat.id, 'После команды введи число, сколько кубов кидать!')
 
     except:
-        print (''.join(traceback.format_exception(*sys.exc_info())))
         bot.send_message(message.chat.id, 'ooooops')
 
 @bot.message_handler(commands=['roll1'])
@@ -123,7 +119,6 @@ def send_roll1(message):
             bot.send_message(message.chat.id, 'После команды введи число, сколько кубов кидать!')
 
     except:
-        print (''.join(traceback.format_exception(*sys.exc_info())))
         bot.send_message(message.chat.id, 'ooooops')
 
 def local_match(pattern, string):
