@@ -1,0 +1,7 @@
+# List of required packages (Dependencies)
+telebot==0.0.3
+traceback
+re
+random
+sys
+
