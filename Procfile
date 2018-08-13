@@ -1,1 +1,1 @@
-web: python clairdicebot.py
+bot: python clairdicebot.py
