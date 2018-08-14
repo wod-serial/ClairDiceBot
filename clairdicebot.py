@@ -6,10 +6,6 @@ import random
 token = '260104236:AAF9vWtho15vJfaj8xqrOGcxkUPgLGiPtYE'
 
 bot = telebot.TeleBot(token)
-CMD = ['/roll - введите сколько d10  мне нужно кинуть и зачем, а я кину и выведу. \nФормат: /roll <число кубов> <сложность> <текст>\nПример:\n/roll 12 7 Джен Эллиот стреляет в голову.\nСложность можно не вводить',
-       '/roll1 - тут не вычитаются единички',
-       '/r - тоже, что и roll, но если лень набирать',
-       '/dice - Чтобы просто кинуть кубик с другим количеством граней. По умолчанию - 10\nПример:\n/dice 10d6\n/dice 12',]
 
 
 @bot.message_handler(commands=['start'])
@@ -18,108 +14,71 @@ def send_start(message):
 
 @bot.message_handler(commands=['help'])
 def send_help(message):
-    bot.send_message(message.chat.id, 'Я очень маленький бот и пока умею совсем немного. Вот мои команды:\n'+ '\n'.join(CMD))
+    mtext = 'Иcпользуйте одну из команд: /r, /roll, /dice\n' \
+            + 'Через пробел введите количество кубиков, сложность, комментарий\n'\
+            + 'Если нужен кубик не d10, напишите: /r 5d6\n'\
+            + 'Пример:\n /r 10 6 Джен Эллиот стреляет в голову'
+    bot.send_message(message.chat.id, mtext)
 
-@bot.message_handler(commands=['hi'])
-def send_welcome(message):
-    bot.send_message(message.chat.id, 'Привет, ' + message.from_user.first_name)
-
-@bot.message_handler(commands=['hello'])
-def send_welcome_hello(message):
-    print(message.from_user.first_name, message.from_user.last_name, message.from_user.username, message.text)
-    bot.send_message(message.chat.id, 'Привет, ' + message.from_user.first_name)
-
-def roll_dices(count, type = 10):
-    count = int(count)
-    type = int(type)
+def roll_dices(dice_count, typedice):
+    dice_count = int(dice_count)
+    typedice = int(typedice)
     t = []
-    for i in range(count):
-        t.append(str(random.randint(1, type)))
+    for i in range(dice_count):
+        t.append(str(random.randint(1, typedice)))
     t.sort(key=sortByInt)
     return t
 
 
-
-@bot.message_handler(commands=['dice'])
-def send_dice(message):
+@bot.message_handler(commands=['r', 'roll', 'dice'])
+def roll(message):
+    type = 10
+    dice_count = 1
+    diff = ''
+    comment = ''
     try:
-        print(message.from_user.first_name, message.from_user.last_name, message.from_user.username, message.text)
         m = message.text.split()
-        if len(m)>1 and (local_match('[0-9]+[d][0-9]+', m[1])):
-            a = m[1].split('d')
-            if len(a)>1:
-                t = roll_dices(int(a[0]), int(a[1]))
-            bot.send_message (message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t))
-        elif len(m)>1 and m[1].isdigit():
-            t = roll_dices(m[1])
-            bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t))
-    except:
-        bot.send_message(message.chat.id, 'ooooops')
-
-
-@bot.message_handler(commands=['roll', 'r'])
-def send_roll(message):
-    try:
-        print(message.from_user.first_name, message.from_user.last_name, message.from_user.username, message.text)
-        m = message.text.split()
-        t = []
-        count = 0
-        if len(m) > 1 and m[1].isdigit():
-            t = roll_dices(m[1])
-            odin = t.count('1')
-            if len(m) > 2 and m[2].isdigit() and t:
-                for i in range(len(t)):
-                    if (int(t[i]) >= int(m[2])):
-                        count += 1
-                count -= odin
-                if (count < 0):
-                    bot.send_message(message.chat.id,
-                                 message.from_user.first_name + ' rolled:\n' +
-                                 ' '.join(t) + ' ' + ' '.join(m[3:]) +
-                                 '\n' + 'Упс! Это БОТЧ!')
-                else:
-                    bot.send_message(message.chat.id,
-                                     message.from_user.first_name + ' rolled:\n' +
-                                     ' '.join(t) + ' ' + ' '.join(m[3:]) +
-                                     '\n' + str(count) + ' успехов по сложности ' + str(m[2]))
-
-            elif(len(m) > 2):
-                bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t) + ' ' + ' '.join(m[2:]))
-            else:
-                bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t))
+        if len(m) <= 1:
+            bot.send_message(message.chat.id, 'Напишите сколько кубов кидать!')
+            return
+        if local_match('[0-9]+[d][0-9]+', m[1]):
+            type = int(m[1].split('d')[1])
+            dice_count = int(m[1].split('d')[0])
+        elif m[1].isdigit() and m[1] != '0':
+            dice_count = int(m[1])
         else:
-            bot.send_message(message.chat.id, 'После команды введи число, сколько кубов кидать!')
-
-    except:
-        bot.send_message(message.chat.id, 'ooooops')
-
-@bot.message_handler(commands=['roll1'])
-def send_roll1(message):
-    try:
-        print(message.from_user.first_name, message.from_user.last_name, message.from_user.username, message.text)
-        m = message.text.split()
-        t = []
-        count = 0
-        if len(m) > 1 and m[1].isdigit():
-            t = roll_dices(m[1])
-            if len(m) > 2 and m[2].isdigit() and t:
-                for i in range(len(t)):
-                    if (int(t[i]) >= int(m[2])):
-                        count += 1
-                bot.send_message(message.chat.id,
-                                     message.from_user.first_name + ' rolled:\n' +
-                                     ' '.join(t) + ' ' + ' '.join(m[3:]) +
-                                     '\n' + str(count) + ' успехов по сложности ' + str(m[2]) + '\nЕдиницы не вычитаются!')
-
-            elif(len(m) > 2):
-                bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t) + ' ' + ' '.join(m[2:]))
+            bot.send_message(message.chat.id, 'Напишите сколько кубов кидать!')
+            return
+        if (len(m) > 2):
+            if m[2].isdigit():
+                diff = int(m[2])
+                if len(m)>3:
+                    comment = ' '.join(m[3:])
             else:
-                bot.send_message(message.chat.id, message.from_user.first_name + ' rolled:\n' + ' '.join(t))
-        else:
-            bot.send_message(message.chat.id, 'После команды введи число, сколько кубов кидать!')
+                comment = ' '.join(m[2:])
+        mess_text = form_text(dice_count, type, diff, comment)
+        bot.send_message(message.chat.id,
+                         message.from_user.first_name + ' rolled:\n' + mess_text)
 
-    except:
+    except Exception as e:
+        print(e)
         bot.send_message(message.chat.id, 'ooooops')
+
+def form_text(dice_count, type, diff, comment):
+    dices = roll_dices(dice_count, type)
+    odin = dices.count('1')
+    success = 0
+    if diff == '':
+        return ' '.join(dices) + ' ' + comment
+    for i in dices:
+        if int(i) >= int(diff):
+            success +=1
+    if success - odin < 0:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + 'Упс! Это БОТЧ!'
+    else:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + str(success - odin) + ' успехов по сложности ' + str(diff)
+    return mess_text
+
 
 def local_match(pattern, string):
     if ';' in string:
@@ -127,14 +86,10 @@ def local_match(pattern, string):
     if ')' in string:
         string.replace(')', '\)')
     return re.match(pattern, string)
-def local_search(pattern, string):
-    if ';' in string:
-        string.replace(';', '\;')
-    if ')' in string:
-        string.replace(')', '\)')
-    return re.search(pattern, string)
+
 
 def sortByInt(inputStr):
     return int(inputStr)
+
 
 bot.polling(none_stop=True, interval=0)
