@@ -17,8 +17,11 @@ def send_help(message):
     mtext = 'Иcпользуйте одну из команд: /r, /roll, /dice\n' \
             + 'Через пробел введите количество кубиков, сложность, комментарий\n'\
             + 'Если нужен кубик не d10, напишите: /r 5d6\n'\
-            + 'Пример:\n /r 10 6 Джен Эллиот стреляет в голову'
+            + 'Пример:\n /r 10 6 Джен Эллиот стреляет в голову\n'\
+            + 'Для бросков без вычитания единиц: /soak и /dam \n'\
+            + 'Для бросков со специализацией(удвоение 10): /spec'
     bot.send_message(message.chat.id, mtext)
+
 
 def roll_dices(dice_count, typedice):
     dice_count = int(dice_count)
@@ -30,14 +33,14 @@ def roll_dices(dice_count, typedice):
     return t
 
 
-@bot.message_handler(commands=['r', 'roll', 'dice'])
+@bot.message_handler(commands=['r', 'roll', 'dice', 'soak', 'dam', 'spec'])
 def roll(message):
     type = 10
-    dice_count = 1
     diff = ''
     comment = ''
     try:
         m = message.text.split()
+        command = m[0]
         if len(m) <= 1:
             bot.send_message(message.chat.id, 'Напишите сколько кубов кидать!')
             return
@@ -52,17 +55,24 @@ def roll(message):
         if (len(m) > 2):
             if m[2].isdigit():
                 diff = int(m[2])
-                if len(m)>3:
+                if len(m) > 3:
                     comment = ' '.join(m[3:])
             else:
                 comment = ' '.join(m[2:])
-        mess_text = form_text(dice_count, type, diff, comment)
+        if command in ['/soak', '/dam']:
+            mess_text = form_text1(dice_count, type, diff, comment)
+        elif command in ['/spec']:
+            mess_text = form_text_spec(dice_count, type, diff, comment)
+        else:
+            mess_text = form_text(dice_count, type, diff, comment)
+
         bot.send_message(message.chat.id,
                          message.from_user.first_name + ' rolled:\n' + mess_text)
 
     except Exception as e:
         print(e)
         bot.send_message(message.chat.id, 'ooooops')
+
 
 def form_text(dice_count, type, diff, comment):
     dices = roll_dices(dice_count, type)
@@ -72,13 +82,45 @@ def form_text(dice_count, type, diff, comment):
         return ' '.join(dices) + ' ' + comment
     for i in dices:
         if int(i) >= int(diff):
-            success +=1
+            success += 1
     if success - odin < 0:
         mess_text = ' '.join(dices) + ' ' + comment + '\n' + 'Упс! Это БОТЧ!'
     else:
         mess_text = ' '.join(dices) + ' ' + comment + '\n' + str(success - odin) + ' успехов по сложности ' + str(diff)
     return mess_text
 
+
+def form_text1(dice_count, type, diff, comment):
+    dices = roll_dices(dice_count, type)
+    success = 0
+    if diff == '':
+        return ' '.join(dices) + ' ' + comment
+    for i in dices:
+        if int(i) >= int(diff):
+            success += 1
+    if success < 0:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + 'Упс! Это БОТЧ!'
+    else:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + str(success) + ' успехов по сложности ' + str(diff)
+    return mess_text
+
+
+def form_text_spec(dice_count, type, diff, comment):
+    dices = roll_dices(dice_count, type)
+    odin = dices.count('1')
+    ten = dices.count('10')
+    success = 0
+    if diff == '':
+        return ' '.join(dices) + ' ' + comment
+    for i in dices:
+        if int(i) >= int(diff):
+            success += 1
+    if success - odin + ten < 0:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + 'Упс! Это БОТЧ!'
+    else:
+        mess_text = ' '.join(dices) + ' ' + comment + '\n' + str(success - odin + ten) + ' успехов по сложности ' + str(
+            diff)
+    return mess_text
 
 def local_match(pattern, string):
     if ';' in string:
