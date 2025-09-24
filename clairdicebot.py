@@ -2,9 +2,16 @@
 import telebot
 import re
 import random
-from token_name import token
 from path_buttons import *
+import os
 
+token = os.getenv("TOKEN") 
+
+if token is not None:
+    print(f"token is set")
+else:
+    print(f"token is NOT set")
+    raise EnvironmentError(f"Required environment variable token is not set.")
 bot = telebot.TeleBot(token)
 
 
