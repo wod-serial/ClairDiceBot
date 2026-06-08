@@ -1,5 +1,10 @@
 # ClairDiceBot
 
+[![PublishDocker](https://github.com/wod-serial/ClairDiceBot/actions/workflows/release.yml/badge.svg)](https://github.com/wod-serial/ClairDiceBot/actions/workflows/release.yml)
+
+[![Python Syntax and Unit Tests](https://github.com/wod-serial/ClairDiceBot/actions/workflows/test.yml/badge.svg)](https://github.com/wod-serial/ClairDiceBot/actions/workflows/test.yml)
+
+
 Telegram dice bot for WoD system
 
 
